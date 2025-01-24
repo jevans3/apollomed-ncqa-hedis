@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - LOG_LEVEL=INFO
+      - API_KEY=${API_KEY}  # Must be set in .env file
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}  # Must be set in .env file
+    volumes:
+      - ./data:/app/data:ro  # Mount data directory as read-only
+      - audit_logs:/app/audit_logs  # Persistent volume for audit logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "--cacert", "/app/certificate.crt", "https://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    # Resource limits for DoS protection
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+volumes:
+  audit_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/audit_logs  # Must exist and have appropriate permissions
