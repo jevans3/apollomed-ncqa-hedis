@@ -23,8 +23,6 @@ RUN apt-get update && \
     # Required for encryption
     gnupg \
     openssl \
-    # Security scanning
-    trivy \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user with specific UID/GID for better security
